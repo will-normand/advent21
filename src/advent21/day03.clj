@@ -25,30 +25,24 @@
 
 ;; Part 2
 
-(defn ogr [matrix]
+(defn filter-matrix [matrix filter-fn]
   (loop
     [m matrix
      column-idx 0]
     (if (= (count m) 1)
       (Integer/parseInt (str/join (mx/get-row m 0)) 2)
-      (let [most-common (most-common (mx/get-column m column-idx))
+      (let [most-common (filter-fn (mx/get-column m column-idx))
             new-mx (filter-rows m most-common column-idx)]
         (recur new-mx (+ column-idx 1))))))
+
+(defn ogr [matrix] (filter-matrix matrix most-common))
 
 (defn least-common [column]
   (let [size (count column)
         sum (reduce + column)]
     (if (< sum (/ size 2)) 1 0)))
 
-(defn csr [matrix]
-  (loop
-    [m matrix
-     column-idx 0]
-    (if (= (count m) 1)
-      (Integer/parseInt (str/join (mx/get-row m 0)) 2)
-      (let [least-common (least-common (mx/get-column m column-idx))
-            new-mx (filter-rows m least-common column-idx)]
-        (recur new-mx (+ column-idx 1))))))
+(defn csr [matrix] (filter-matrix matrix least-common))
 
 (defn part2 [filename]
   (let [m (input-matrix (load-input filename))
