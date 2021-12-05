@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [advent21.day05 :as day]))
 
-(def test-file "resources/day05test")
+(def test-file "day05test")
 
 (deftest part1 (is (= (day/part1 test-file) 5)))
 
