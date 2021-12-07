@@ -8,15 +8,22 @@
                                       (str/split #","))
                                   (map i/parse-int)))
 
-(defn do-day [fish] (if (= fish 0) [6 8] [(dec fish)]))
-(defn day [fishes] (mapcat do-day fishes))
+(defn fish-counts [starting-shoal] (frequencies starting-shoal))
+
+(defn shoal-day [fish-map]
+  (let [eggs (get fish-map 0 0)
+        without-zeros (dissoc fish-map 0)
+        aged (into {} (map (fn [[k v]] [(dec k) v]) without-zeros))]
+    (-> aged
+        (assoc 6 (+ eggs (get aged 6 0)))
+        (assoc 8 eggs))))
 
 (defn run-simulation [generations starting-shoal]
   (loop [x 0
-         fishes starting-shoal]
+         fishes (fish-counts starting-shoal)]
     (if (= x generations)
-      (count fishes)
-      (recur (inc x) (day fishes)))))
+      (reduce + (vals fishes))
+      (recur (inc x) (shoal-day fishes)))))
 
 (defn part1 [filename]
   (run-simulation 80 (parse-input filename)))
