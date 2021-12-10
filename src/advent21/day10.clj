@@ -1,22 +1,21 @@
 (ns advent21.day10
-  (:require [clojure.string :as str]
-            [advent21.utils.input :as i]))
+  (:require [advent21.utils.input :as i]))
 
-(defn load-input ([filename] (str/split-lines (slurp filename))))
+(def error-score {\) 3
+                  \] 57
+                  \} 1197
+                  \> 25137})
+(def complete-score {\) 1
+                     \] 2
+                     \} 3
+                     \> 4})
+(def brackets {\( \) \[ \] \{ \} \< \>})
+(def opens (set (keys brackets)))
 
-(def score {\) 3
-            \] 57
-            \} 1197
-            \> 25137
-            nil 0})
-
-(def brackets { \( \) \[ \] \{ \} \< \>})
-
-(def opens #{\( \[ \{ \<})
-
-(defn parse-row [row] (seq row))
-
-(defn first-error [line]
+(defn check-brackets
+  "Checks for matching brackets.  In case of an error, returns the invalid character.
+  If incomplete, returns the necessary completion sequence."
+  [line]
   (loop [l line
          stack (list)]
     (if-let [head (first l)]
@@ -25,9 +24,17 @@
         (if (= (brackets (first stack)) head)
           (recur (rest l) (rest stack))
           head))
-      nil)))
+      stack)))
 
-(defn part1 [filename] (let [input (parse-row (i/load-input filename))]
-                         (reduce + (filter #(not (nil? %)) (map #(score (first-error %)) input)))))
+(defn complete [line] (map brackets (let [result (check-brackets line)] (when (seq? result) result))))
+(defn score [current-score bracket] (+ (complete-score bracket) (* current-score 5)))
+(defn score-completion [completion] (reduce score 0 completion))
+(defn score-completions [rows] (->> (map complete rows)
+                                    (filter not-empty)
+                                    (map #(score-completion %))))
+(defn middle-score [scores] (nth (sort scores) (/ (dec (count scores)) 2)))
 
-(defn part2 [filename])
+(defn part1 [filename] (let [input (i/load-input filename)]
+                         (reduce + (filter #(not (nil? %)) (map #(error-score (check-brackets %)) input)))))
+
+(defn part2 [filename] (middle-score (score-completions (i/load-input filename))))
