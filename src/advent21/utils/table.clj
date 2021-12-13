@@ -50,3 +50,5 @@
          (filter (fn [[x y]] (and (>= x 0) (>= y 0) (< x x-size) (< y y-size)))))))
 
 (defn cell-count [t] (* (count t) (if (= (count t) 0) 0 (count (first t)))))
+
+(defn print-table [t] (doseq [row t] (doseq [cell row] (print cell)) (println)))
