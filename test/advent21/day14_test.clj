@@ -5,4 +5,4 @@
 (def test-file "day14test")
 
 (deftest part1 (is (= (day/part1 test-file) 1588)))
-(deftest part2 (is (= (day/part2 test-file) nil)))
+(deftest part2 (is (= (day/part2 test-file) 2188189693529)))
