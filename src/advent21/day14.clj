@@ -13,7 +13,7 @@
      :rules    (into {} rules)}))
 
 (defn step [polymer rules]
-  (println "polymer is a" (type polymer) "that's" (count polymer) "long")
+  #_(println "polymer is a" (type polymer) "that's" (count polymer) "long")
   (loop [[a b & rest] polymer
          new-polymer '()]
     (if (nil? b)
@@ -58,13 +58,11 @@
                     (t/is (= {'z 1}
                              (pairwise-step ['x 'y] {['x 'y] 'z} 10)))))}
   [pair rules steps]
+  (println "Top level pair " pair)
   (letfn [(pairwise-step0 [pair step freqs]
-            (let [[a b] pair
-                  new-freqs (-> freqs
-                                (update a inc-with-nil)
-                                (update b inc-with-nil))]
+            (let [[a b] pair]
               (if (= step steps)
-                (do #_(println "Reached max depth " freqs)
+                (do (println "Reached max depth " freqs)
                   freqs)
                 (if-let [c (get rules [a b])]
                   (merge-with +
@@ -78,10 +76,9 @@
                                 [c b]
                                 (inc step)
                                 {} #_(if (= c b) {c 2} {c 1, b 1})))
-                  (do #_(println "no more subs for " a b freqs)
+                  (do (println "no more subs for " a b freqs)
                       freqs)))))]
-    (let [[a b] pair]
-      (pairwise-step0 pair 0 {} #_(if (= a b) {a 2} {a 1, b 1})))))
+    (pairwise-step0 pair 0 {})))
 
 (defn pairwise-steps [polymer rules steps]
   (let [pairs (partition 2 1 polymer)
