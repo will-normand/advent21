@@ -53,14 +53,26 @@
   (letfn [(pairwise-step0 [pair step freqs]
             (let [[a b] pair]
               (if (= step steps)
-                (do (println "Reached max depth " freqs)
+                (do #_(println "Reached max depth " freqs)
                   freqs)
                 (if-let [c (get rules [a b])]
                   (merge-with +
-                              (pairwise-step0 [a c] (inc step) (update freqs c inc-with-nil))
-                              (pairwise-step0 [c b] (inc step) (update freqs c inc-with-nil)))
+                              freqs
+                              (pairwise-step0
+                                [a c]
+                                (inc step)
+                                (if (= a c) {a 2} {a 1, c 1})) ; TODO fix this ugliness
+                              (pairwise-step0
+                                [c b]
+                                (inc step)
+                                (if (= c b) {c 2} {c 1, b 1})))
                   (do (println "no more subs for " a b freqs) freqs)))))]
     (pairwise-step0 pair 0 {})))
+
+(defn pairwise-steps [polymer rules steps]
+  (let [pairs (partition 2 1 polymer)]
+    (->> (map #(pairwise-step % rules steps) pairs)
+         (reduce (partial merge-with +)))))
 
 (defn most-least-common [polymer] (let [freq (frequencies polymer)
                                         sorted-freqs (sort-by val freq)]
