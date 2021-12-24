@@ -27,7 +27,7 @@
 
 (def inc-with-nil (fn [x] (if (nil? x) 1 (inc x))))
 
-(defn pairwise-step [pair rules steps]
+#_(defn pairwise-step [pair rules steps]
   (loop [[a b] pair
          freqs {a 1, b 1}
          step 0]
@@ -37,9 +37,30 @@
         (merge-with +
                     (recur [a c] (update freqs c inc-with-nil) (inc step))
                     (recur [c b] (update freqs c inc-with-nil) (inc step)))
-        (recur
-          
-          )))))
+        freqs))))
+
+;(defn pairwise-step0 [pair rules step steps freqs]
+;  (let [[a b] pair]
+;    (if (= step steps)
+;      freqs
+;      (if-let [c (get rules [a b])]
+;        (merge-with +
+;                    (pairwise-step0 [a c] rules (inc step) steps (update freqs c inc-with-nil))
+;                    (pairwise-step0 [c b] rules (inc step) steps (update freqs c inc-with-nil)))
+;        freqs))))
+
+(defn pairwise-step [pair rules steps]
+  (letfn [(pairwise-step0 [pair step freqs]
+            (let [[a b] pair]
+              (if (= step steps)
+                (do (println "Reached max depth " freqs)
+                  freqs)
+                (if-let [c (get rules [a b])]
+                  (merge-with +
+                              (pairwise-step0 [a c] (inc step) (update freqs c inc-with-nil))
+                              (pairwise-step0 [c b] (inc step) (update freqs c inc-with-nil)))
+                  (do (println "no more subs for " a b freqs) freqs)))))]
+    (pairwise-step0 pair 0 {})))
 
 (defn most-least-common [polymer] (let [freq (frequencies polymer)
                                         sorted-freqs (sort-by val freq)]
