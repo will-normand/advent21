@@ -5,4 +5,5 @@
 (def test-file "day14test")
 
 (deftest part1 (is (= (day/part1 test-file) 1588)))
+(deftest part1-depth (is (= (day/part1-depth test-file) 1588)))
 (deftest part2 (is (= (day/part2 test-file) 2188189693529)))
