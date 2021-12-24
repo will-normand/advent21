@@ -59,26 +59,20 @@
                              (pairwise-step ['x 'y] {['x 'y] 'z} 10)))))}
   [pair rules steps]
   (println "Top level pair " pair)
-  (letfn [(pairwise-step0 [pair step freqs]
+  (letfn [(pairwise-step0 [pair step]
             (let [[a b] pair]
               (if (= step steps)
-                (do (println "Reached max depth " freqs)
-                  freqs)
+                (do #_(println "Reached max depth " )
+                  {})
                 (if-let [c (get rules [a b])]
-                  (merge-with +
-                              freqs
-                              {c 1}
-                              (pairwise-step0
-                                [a c]
-                                (inc step)
-                                {}  #_(if (= a c) {a 2} {a 1, c 1})) ; TODO fix this ugliness
-                              (pairwise-step0
-                                [c b]
-                                (inc step)
-                                {} #_(if (= c b) {c 2} {c 1, b 1})))
-                  (do (println "no more subs for " a b freqs)
-                      freqs)))))]
-    (pairwise-step0 pair 0 {})))
+                  (do (println "c is" c "for " a b)
+                    (merge-with +
+                                {c 1}
+                                (pairwise-step0 [a c] (inc step))
+                                (pairwise-step0 [c b] (inc step))))
+                  (do (println "no more subs for " a b)
+                      {})))))]
+    (pairwise-step0 pair 0)))
 
 (defn pairwise-steps [polymer rules steps]
   (let [pairs (partition 2 1 polymer)
