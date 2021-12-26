@@ -13,7 +13,6 @@
      :rules    (into {} rules)}))
 
 (defn step [polymer rules]
-  #_(println "polymer is a" (type polymer) "that's" (count polymer) "long")
   (loop [[a b & rest] polymer
          new-polymer '()]
     (if (nil? b)
@@ -26,30 +25,6 @@
           (conj rest b)
           (conj new-polymer a))))))
 
-(def inc-with-nil (fn [x] (if (nil? x) 1 (inc x))))
-
-#_(defn pairwise-step [pair rules steps]
-    (loop [[a b] pair
-           freqs {a 1, b 1}
-           step 0]
-      (if (= step steps)
-        freqs
-        (if-let [c (get rules [a b])]
-          (merge-with +
-                      (recur [a c] (update freqs c inc-with-nil) (inc step))
-                      (recur [c b] (update freqs c inc-with-nil) (inc step)))
-          freqs))))
-
-;(defn pairwise-step0 [pair rules step steps freqs]
-;  (let [[a b] pair]
-;    (if (= step steps)
-;      freqs
-;      (if-let [c (get rules [a b])]
-;        (merge-with +
-;                    (pairwise-step0 [a c] rules (inc step) steps (update freqs c inc-with-nil))
-;                    (pairwise-step0 [c b] rules (inc step) steps (update freqs c inc-with-nil)))
-;        freqs))))
-
 (defn pairwise-step
   {:test (fn [] (do (t/is (= {}
                              (pairwise-step ['x 'y] {} 10)))
@@ -58,20 +33,19 @@
                     (t/is (= {'z 1}
                              (pairwise-step ['x 'y] {['x 'y] 'z} 10)))))}
   [pair rules steps]
-  (println "Top level pair " pair)
-  (letfn [(pairwise-step0 [pair step]
+  (let [pairwise-step0
+        (memoize
+          (fn [pairwise-step0 pair step]
             (let [[a b] pair]
               (if (= step steps)
-                (do #_(println "Reached max depth " )
-                  {})
+                {}
                 (if-let [c (get rules [a b])]
-                  (do (println "c is" c "for " a b)
-                    (merge-with +
-                                {c 1}
-                                (pairwise-step0 [a c] (inc step))
-                                (pairwise-step0 [c b] (inc step))))
-                  (do (println "no more subs for " a b)
-                      {})))))]
+                  (merge-with +
+                              {c 1}
+                              (pairwise-step0 pairwise-step0 [a c] (inc step))
+                              (pairwise-step0 pairwise-step0 [c b] (inc step)))
+                  {})))))
+        pairwise-step0 (partial pairwise-step0 pairwise-step0)]
     (pairwise-step0 pair 0)))
 
 (defn pairwise-steps [polymer rules steps]
